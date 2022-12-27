@@ -1,0 +1,16 @@
+{
+    "name": "trekbill/hms",
+    "description": "hms",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bill Dickson",
+            "email": "trekbill@gmail.com"
+        }
+    ],
+    "require": {
+        "bcosca/fatfree-core": "^3.8",
+        "firebase/php-jwt": "^6.3"
+    }
+}

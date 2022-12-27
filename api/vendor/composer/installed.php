@@ -1,0 +1,41 @@
+<?php return array(
+    'root' => array(
+        'pretty_version' => '1.0.0+no-version-set',
+        'version' => '1.0.0.0',
+        'type' => 'project',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'reference' => NULL,
+        'name' => 'trekbill/hms',
+        'dev' => true,
+    ),
+    'versions' => array(
+        'bcosca/fatfree-core' => array(
+            'pretty_version' => '3.8.1',
+            'version' => '3.8.1.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../bcosca/fatfree-core',
+            'aliases' => array(),
+            'reference' => 'f6ea45472f55a1ecabd4ced74cb56f0efd6af34e',
+            'dev_requirement' => false,
+        ),
+        'firebase/php-jwt' => array(
+            'pretty_version' => 'v6.3.2',
+            'version' => '6.3.2.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../firebase/php-jwt',
+            'aliases' => array(),
+            'reference' => 'ea7dda77098b96e666c5ef382452f94841e439cd',
+            'dev_requirement' => false,
+        ),
+        'trekbill/hms' => array(
+            'pretty_version' => '1.0.0+no-version-set',
+            'version' => '1.0.0.0',
+            'type' => 'project',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'reference' => NULL,
+            'dev_requirement' => false,
+        ),
+    ),
+);
