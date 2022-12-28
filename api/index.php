@@ -9,6 +9,7 @@ require 'vendor/autoload.php';
 //  this makes $f3 pretty global but wtf . . .
 $f3 = \Base::instance();
 
+//  init
 //  load up route_fragments and lib classes
 //  route_fragments need $f3
 require 'src/index_loader.php';

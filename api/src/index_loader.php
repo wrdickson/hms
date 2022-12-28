@@ -6,7 +6,6 @@ namespace wrdickson\hms;
 require 'config/config.php';
 
 //  1. require source classes
-//  maybe in this order??
 require 'lib/Auth.php';
 require 'lib/Account.php';
 require 'lib/F3Auth.php';
@@ -29,10 +28,17 @@ require 'lib/Reservation.php';
 require 'lib/Reservations.php';
 require 'lib/SaleTypeGroups.php';
 
-
-
 //  2. require route fragments
 require 'route_fragments/auth.php';
+//  this is bullshit dev/debug routes
 require 'route_fragments/dev.php';
-
-
+require 'route_fragments/reservations.php';
+require 'route_fragments/root_spaces.php';
+require 'route_fragments/sale_types.php';
+require 'route_fragments/sale_type_groups.php';
+require 'route_fragments/tax_types.php';
+require 'route_fragments/payment_types.php';
+require 'route_fragments/customers.php';
+require 'route_fragments/folios.php';
+require 'route_fragments/payments.php';
+require 'route_fragments/space_types.php';

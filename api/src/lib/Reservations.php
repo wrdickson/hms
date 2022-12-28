@@ -187,6 +187,7 @@ public static function check_conflicts( $start, $end, $space_id ) {
       $account_username = $i_account->get_username();
     } catch ( Exception $e ) {
       $pdo->rollBack();
+      print('error getting account');
     }
     //  generate the space code
     try {
@@ -211,6 +212,8 @@ public static function check_conflicts( $start, $end, $space_id ) {
       $i_folio = new Folio($new_folio_id);
       $response['new_folio_id'] = $i_folio;
     } catch (Exception $e ) {
+      $response['add_folio_error'] = $e;
+      $response['folio_cust_id'] = $customer;
       $pdo->rollBack();
     }
 
@@ -248,6 +251,7 @@ public static function check_conflicts( $start, $end, $space_id ) {
     //  add history
     //  we can not do this until the transaction has committed
     //  since reservation->add_history requires an instantiated reservation
+    /*
     try {
       $h_res = new Reservation( $new_res_id );
       $response['nri'] = $new_res_id;
@@ -256,7 +260,7 @@ public static function check_conflicts( $start, $end, $space_id ) {
     } catch (Exception $e) {
       $response['add_history'] = false;
     }
-    
+    */
     //  instantiate the new reservation
     $final_res = new Reservation( $new_res_id );
     $response['new_res'] = $final_res->to_array();
@@ -264,29 +268,38 @@ public static function check_conflicts( $start, $end, $space_id ) {
     return $response;
   }
 
-  public static function get_reservations_date_range( $startDate, $endDate ){
+  public static function get_reservations_date_range( $start_date, $end_date ){
     $pdo = DataConnector::get_connection();
-    $stmt = $pdo->prepare("SELECT * FROM reservations WHERE checkout >= :start AND checkin <= :end");
-    $stmt->bindParam(':start', $startDate);
-    $stmt->bindParam(':end', $endDate);
+    $sql = "SELECT reservations.id, reservations.folio, reservations.is_assigned, reservations.space_type_pref, 
+    reservations.space_id, reservations.space_code, reservations.checkin, reservations.checkout, 
+    reservations.people, reservations.beds, reservations.history, reservations.status, reservations.notes, 
+    folios.customer, customers.last_name, customers.first_name FROM reservations 
+    INNER JOIN folios ON reservations.folio = folios.id 
+    INNER JOIN customers ON folios.customer = customers.id 
+    WHERE checkout >= :start AND checkin <= :end";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':start', $start_date);
+    $stmt->bindParam(':end', $end_date);
     $stmt->execute();
     $arr= array();
     while($obj = $stmt->fetch(PDO::FETCH_OBJ)){
-        $cust = new Customer($obj->customer);
         $iArr = array();
         $iArr['id'] = $obj->id;
+        $iArr['folio'] = $obj->folio;
+        $iArr['is_assigned'] = $obj->is_assigned;
+        $iArr['space_type_pref'] = $obj->space_type_pref;
         $iArr['space_id'] = $obj->space_id;
-        $iArr['space_code'] = $obj->space_code;
+        $iArr['space_code'] = json_decode($obj->space_code, true);
         $iArr['checkin'] = $obj->checkin;
         $iArr['checkout'] = $obj->checkout;
-        $iArr['customer'] = $obj->customer;
-        $iArr['customer_obj'] = $cust->to_array();
         $iArr['people'] = $obj->people;
         $iArr['beds'] = $obj->beds;
-        $iArr['folio'] = $obj->folio;
-        $iArr['status'] = $obj->status;
         $iArr['history'] = json_decode($obj->history, true);
+        $iArr['status'] = $obj->status;
         $iArr['notes'] = json_decode($obj->notes, true);
+        $iArr['customer'] = $obj->customer;
+        $iArr['customer_last'] = $obj->last_name;
+        $iArr['customer_first'] = $obj->first_name;
         array_push($arr, $iArr);
     };
     return $arr;

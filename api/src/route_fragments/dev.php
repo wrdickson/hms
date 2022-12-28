@@ -2,6 +2,10 @@
 
 namespace wrdickson\hms;
 
+$f3->route('GET /foo', function ( $f3) {
+  print 'bar';
+});
+
 $f3->route('GET /hello', function ( $f3 ) {
   $start = '2022-12-26';
   $end = '2022-12-27';

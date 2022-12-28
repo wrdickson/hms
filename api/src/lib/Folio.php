@@ -42,7 +42,8 @@ Class Folio{
       $arr['sale_quantity'] = $obj->sale_quantity;
       $arr['sale_price'] = $obj->sale_price;
       $arr['sale_subtotal'] = $obj->sale_subtotal;
-      $arr['sale_tax'] = $obj->sale_tax;
+      $arr['sale_tax'] = $obj->sale_total;
+      
       $arr['sale_total'] = $obj->sale_total;
       $arr['tax_spread'] = json_decode( $obj->tax_spread, true );
       array_push( $items_arr, $arr );

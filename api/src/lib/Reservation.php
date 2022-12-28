@@ -114,6 +114,7 @@ Class Reservation{
     $this->checkout = $checkout;
     return $this->update_to_db();
   }
+
   public function set_people ( $people ) {
     $this->people = $people;
     return $this->update_to_db();
@@ -141,7 +142,7 @@ Class Reservation{
     $historyArr['account_id'] = $user_id;
     $historyArr['account_name'] = $user_name;
     $historyArr['text'] = $history_text;
-    array_push($this->history, $historyArr);
+    array_push($this->get_history(), $historyArr);
     $updateSuccess = $this->update_to_db();
     return $updateSuccess;
   }
