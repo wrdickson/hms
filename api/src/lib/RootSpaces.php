@@ -2,7 +2,7 @@
 
 //  there is a gotcha in get_root_space_children()
 //  and get_root_space_parents() where we have
-//  to explicitly refer the functions  by namespace
+//  to explicitly refer the functions by namespace
 //  when executing these recursive functions
 //  easy to fix, just do it when changing namespace
 namespace wrdickson\hms;
@@ -33,10 +33,10 @@ Class RootSpaces {
     return $id;
   }
 
-  public static function delete_root_space ($rootSpaceId) {
+  public static function delete_root_space ( $root_space_id ) {
     $pdo = DataConnector::get_connection();
     $stmt = $pdo->prepare("DELETE FROM root_spaces WHERE id = :rsi");
-    $stmt->bindParam(":rsi", $rootSpaceId);
+    $stmt->bindParam(":rsi", $root_space_id);
     $execute = $stmt->execute();
     $pdo = null;
     return $execute;
@@ -65,7 +65,7 @@ Class RootSpaces {
       $iArr['title'] = $iObj->title;
       $iArr['childOf'] = $iObj->child_of;
       $iArr['displayOrder'] = $iObj->display_order;
-      $iArr['showChildren'] = (string)$iObj->show_children;
+      $iArr['showChildren'] = $iObj->show_children;
       $iArr['spaceType'] = $iObj->space_type;
       $iArr['people'] = $iObj->people;
       $iArr['beds'] = $iObj->beds;

@@ -31,4 +31,15 @@ Class TaxTypes {
     return $tax_types;
   }
 
+  public static function update_tax_type ( $tax_type_id, $tax_title, $tax_rate, $is_current, $display_order ) {
+    $pdo = DataConnector::get_connection();
+    $stmt = $pdo->prepare("UPDATE tax_types SET tax_title = :tt, tax_rate = :tr, is_current = :ic, display_order = :do WHERE id = :ttid ");
+    $stmt->bindParam(':tt', $tax_title);
+    $stmt->bindParam(':tr', $tax_rate);
+    $stmt->bindParam(':ic', $is_current);
+    $stmt->bindParam(':do', $display_order);
+    $stmt->bindParam(':ttid', $tax_type_id); 
+    return $stmt->execute();
+  }
+
 }
