@@ -55,12 +55,14 @@ $f3->route('POST /root-spaces-delete', function( $f3 ) {
 
 //  GET ROOT SPACES
 $f3->route('POST /root-spaces', function ( $f3 ) {
+  /*
   $perms = [ 'permission' => 1, 'role' => 'get_root_spaces' ];
   //  the request should have 'Jwt' property in header with user's token
   //  this throws an error if the token doesn't work OR user doesn't have permission
   $f3auth = F3Auth::authorize_token( $f3, $perms );
   
   $account = $f3auth['decoded']->account;
+  */
   $params = json_decode($f3->get('BODY'));
   
   $root_spaces_pre_children = RootSpaces::get_root_spaces();
@@ -71,7 +73,7 @@ $f3->route('POST /root-spaces', function ( $f3 ) {
     array_push($root_spaces_children_parents, $rspc);
   }
   
-  $response['account'] = $account;
+  //$response['account'] = $account;
   $response['params'] = $params;
   $response['root_spaces_pre_children'] = $root_spaces_pre_children;
   $response['root_spaces_children_parents'] = $root_spaces_children_parents;

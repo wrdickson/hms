@@ -4,7 +4,7 @@ namespace wrdickson\hms;
 
 Class TaxTypes {
 
-  public static function add_tax_type( $tax_title, $tax_rate, $is_current, $display_order ){
+  public static function create_tax_type( $tax_title, $tax_rate, $is_current, $display_order ){
     $pdo = DataConnector::get_connection();
     $stmt = $pdo->prepare("INSERT INTO tax_types ( tax_title, tax_rate, is_current, display_order ) VALUES ( :tt, :tr, :ic, :do )");
     $stmt->bindParam(":tt", $tax_title);
@@ -12,6 +12,13 @@ Class TaxTypes {
     $stmt->bindParam(":ic", $is_current);
     $stmt->bindParam(":do", $display_order);
     return $stmt->execute(); 
+  }
+
+  public static function delete_tax_type( $id ) {
+    $pdo = DataConnector::get_connection();
+    $stmt= $pdo->prepare("DELETE FROM tax_types WHERE id = :id");
+    $stmt->bindParam(':id', $id );
+    return $stmt->execute();
   }
 
   public static function get_all_tax_types(){

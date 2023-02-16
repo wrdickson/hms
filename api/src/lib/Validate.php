@@ -134,6 +134,26 @@ Class Validate {
   }
 
   //  VALIDATION FUNCTIONS FOLLOW:
+
+  /**
+   * is_0_or_1
+   */
+  private function is_0_or_1 ( $input, $args_array ) {
+    if( $input == 0 || $input == 1 ) {
+      return array (
+        'test' => true
+      );
+    } else {
+      return array (
+        'test' => false,
+        'error' => 'is not 0 or 1'
+      );
+    }
+  }
+
+  /**
+   * is_array
+   */
   private function is_array ( $input, $args_array ) {
     if( is_array( $input ) ) {
       return array (
@@ -213,6 +233,19 @@ Class Validate {
       return array(
         'test' => false,
         'error' => 'is not float'
+      );
+    }
+  }
+
+  private function is_greater_than_0 ( $input, $args_array ) {
+    if(  $input > 0  ) {
+      return array(
+        'test' => true
+      );
+    } else { 
+      return array(
+        'test' => false,
+        'error' => 'is not greater than 0'
       );
     }
   }
