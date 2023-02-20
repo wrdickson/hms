@@ -10,8 +10,9 @@ Class Reservations {
 public static function check_availability_by_dates( $start, $end ) {
   $response = array();
   $pdo = DataConnector::get_connection();
-  //first, get all reservations that conflict with those dates
-  $stmt = $pdo->prepare("SELECT * FROM reservations WHERE checkin < :end AND checkout > :start");
+  //  first, get all reservations that conflict with those dates
+  //  note that we exclude unassinged reservations
+  $stmt = $pdo->prepare("SELECT * FROM reservations WHERE checkin < :end AND checkout > :start AND is_assigned = 1");
   $stmt->bindParam(":start", $start, PDO::PARAM_STR);
   $stmt->bindParam(":end", $end, PDO::PARAM_STR);
   $stmt->execute();
@@ -59,8 +60,9 @@ public static function check_availability_by_dates( $start, $end ) {
 public static function check_availability_by_dates_ignore_res( $start, $end, $res_id ) {
   $response = array();
   $pdo = DataConnector::get_connection();
-  //first, get all reservations that conflict with those dates
-  $stmt = $pdo->prepare("SELECT * FROM reservations WHERE checkin < :end AND checkout > :start AND id != :id");
+  //  first, get all reservations that conflict with those dates
+  //  note that we exclude unassigned reservations
+  $stmt = $pdo->prepare("SELECT * FROM reservations WHERE checkin < :end AND checkout > :start AND id != :id AND is_assigned = 1");
   $stmt->bindParam(":start", $start, PDO::PARAM_STR);
   $stmt->bindParam(":end", $end, PDO::PARAM_STR);
   $stmt->bindParam(":id", $res_id, PDO::PARAM_INT);
@@ -112,7 +114,7 @@ public static function check_conflicts( $start, $end, $space_id ) {
     //we do allow overlap in sense that one person can checkout on the same
     //day someone checks in
     //  https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
-    $stmt = $pdo->prepare("SELECT * FROM reservations WHERE JSON_CONTAINS( space_code, :spaceId ) > 0 AND ( :start < checkout AND :end > checkin )");
+    $stmt = $pdo->prepare("SELECT * FROM reservations WHERE JSON_CONTAINS( space_code, :spaceId ) > 0 AND ( :start < checkout AND :end > checkin ) AND is_assigned = 1");
     $stmt->bindParam(":start", $start, PDO::PARAM_STR);
     $stmt->bindParam(":end", $end, PDO::PARAM_STR);
     //  this must be a string for JSON_CONTAINS
@@ -143,7 +145,7 @@ public static function check_conflicts( $start, $end, $space_id ) {
     //we do allow overlap in sense that one person can checkout on the same
     //day someone checks in
     //  https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
-    $stmt = $pdo->prepare("SELECT * FROM `reservations` WHERE JSON_CONTAINS( space_code, :spaceId ) > 0 AND ( :start < `checkout` AND :end > `checkin`  ) AND id != :id");
+    $stmt = $pdo->prepare("SELECT * FROM `reservations` WHERE JSON_CONTAINS( space_code, :spaceId ) > 0 AND ( :start < `checkout` AND :end > `checkin`  ) AND id != :id AND is_assigned = 1");
     $stmt->bindParam(":start", $start, PDO::PARAM_STR);
     $stmt->bindParam(":end", $end, PDO::PARAM_STR);
     //  spaceid must be a string for JSON_CONTAINS
@@ -172,7 +174,7 @@ public static function check_conflicts( $start, $end, $space_id ) {
   /**
    *  Create Reservation
    */
-  public static function create_reservation( $account_id, $customer, $checkin, $checkout, $space_id, $beds, $people ){ 
+  public static function create_reservation( $account_id, $customer, $checkin, $checkout, $space_id, $beds, $people, $is_assigned, $space_type_pref ){ 
     $response = array();
     $new_res_id = 0;
     //  TODO make damn sure there is not a comflict
@@ -180,6 +182,11 @@ public static function check_conflicts( $start, $end, $space_id ) {
     //  start the transaction
     $pdo = DataConnector::get_connection();
     $pdo->beginTransaction();
+
+    //  $space_id is null for unassigned reservation
+    if( !$space_id ) {
+      $space_id = 0;
+    }
 
     //  get the user(account)
     try{
@@ -191,15 +198,21 @@ public static function check_conflicts( $start, $end, $space_id ) {
     }
     //  generate the space code
     try {
-      $childrenArr = RootSpaces::get_root_space_children( $space_id );
-      if( count( $childrenArr ) > 0 ) {
-        array_push($childrenArr, (int)$space_id);
-        $space_code = $childrenArr;
+      //  if res is unassinged, space code is null
+      if ( $space_id ) {
+        $childrenArr = RootSpaces::get_root_space_children( $space_id );
+        if( count( $childrenArr ) > 0 ) {
+          array_push($childrenArr, (int)$space_id);
+          $space_code = $childrenArr;
+        } else {
+          $space_code = array( (int)$space_id );
+        }
+        $response['space_code'] = $space_code;
+        $space_code_json = json_encode($space_code);
       } else {
-        $space_code = array( (int)$space_id );
+        $space_code_json = '[]';
       }
-      $response['space_code'] = $space_code;
-      $space_code_json = json_encode($space_code);
+
     } catch (Exception $e) {
       $pdo->rollBack();
     }
@@ -219,8 +232,7 @@ public static function check_conflicts( $start, $end, $space_id ) {
 
     //  get space type pref
     try {
-      $i_root_space = new RootSpace($space_id);
-      $space_type_pref = $i_root_space->get_space_type();
+
       $response['space_type_pref'] = $space_type_pref;
     } catch ( Exception $e ) {
       $pdo->rollBack();
@@ -228,8 +240,9 @@ public static function check_conflicts( $start, $end, $space_id ) {
 
     try {
       //  add to db
-      $stmt = $pdo->prepare("INSERT INTO reservations (folio, is_assigned, space_type_pref, space_id, space_code, checkin, checkout, people, beds, history, `status`, notes) VALUES (:fol, '1', :stf, :si, :sc, :ci, :co, :ppl, :bds, '[]', '0', '[]')");
+      $stmt = $pdo->prepare("INSERT INTO reservations (folio, is_assigned, space_type_pref, space_id, space_code, checkin, checkout, people, beds, history, `status`, notes) VALUES (:fol, :ia, :stf, :si, :sc, :ci, :co, :ppl, :bds, '[]', '0', '[]')");
       $stmt->bindParam(":fol", $new_folio_id);
+      $stmt->bindParam(":ia", $is_assigned);
       $stmt->bindParam(":stf", $space_type_pref);
       $stmt->bindParam(":si", $space_id);
       $stmt->bindParam(":sc", $space_code_json);

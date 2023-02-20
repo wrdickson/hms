@@ -39,8 +39,8 @@ Class Reservation{
    * the folowing properties are generated at construct, not in reservations table
    */
   private $customer;
-  private $customer_first_name;
-  private $customer_last_name;
+  private $customer_first;
+  private $customer_last;
 
   /**
    * CONSTRUCTOR
@@ -72,8 +72,8 @@ Class Reservation{
       $this->status = $obj->status;
       $this->notes = json_decode($obj->notes, true);
       $this->customer = $obj->customer;
-      $this->customer_first_name = $obj->first_name;
-      $this->customer_last_name = $obj->last_name;
+      $this->customer_first = $obj->first_name;
+      $this->customer_last = $obj->last_name;
     }
   }
 
@@ -176,8 +176,8 @@ Class Reservation{
     $arr['status'] = $this->status;
     $arr['notes'] = $this->notes;
     $arr['customer'] = $this->customer;
-    $arr['customer_first_name'] = $this->customer_first_name;
-    $arr['customer_last_name'] = $this->customer_last_name;
+    $arr['customer_first'] = $this->customer_first;
+    $arr['customer_last'] = $this->customer_last;
     return $arr;
   }
 
@@ -273,10 +273,10 @@ Class Reservation{
   public function get_customer () {
     return $this->customer;
   }
-  public function get_customer_first_name () {
-    return $this->customer_first_name;
+  public function get_customer_first () {
+    return $this->customer_first;
   }
-  public function get_customer_last_name () {
-    return $this->customer_last_name;
+  public function get_customer_last () {
+    return $this->customer_last;
   }
 }

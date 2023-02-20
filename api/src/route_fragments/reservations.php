@@ -14,7 +14,7 @@ $f3->route('POST /reservations/', function ( $f3 ) {
   $account = $f3auth['decoded']->account;
   $params = json_decode($f3->get('BODY'), true);
 
-  $response['create'] = Reservations::create_reservation($account->id, $params['customer']['id'], $params['checkin'], $params['checkout'], $params['space_id'], $params['beds'], $params['people'] );
+  $response['create'] = Reservations::create_reservation($account->id, $params['customer']['id'], $params['checkin'], $params['checkout'], $params['space_id'], $params['beds'], $params['people'], $params['is_assigned'], $params['space_type_pref'] );
 
   $response['cid'] = $params['customer']['id'];
   $response['account'] = $account;
@@ -102,7 +102,7 @@ $f3->route('POST /reservations/range-ignore-res', function( $f3 ) {
 /**
  *  MODIFY RESERVATION 1
  */
-$f3->route('POST /reservations/update/', function ( $f3 ) {
+$f3->route('POST /reservations/update1/', function ( $f3 ) {
 
   $perms = [ 'permission' => 3, 'role' => 'modify_reservations' ];
   //  the request should have 'Jwt' property in header with user's token
@@ -121,11 +121,12 @@ $f3->route('POST /reservations/update/', function ( $f3 ) {
   //  create local param copies
   $checkin = $resObj->checkin;
   $checkout = $resObj->checkout;
-  $customer_id = $resObj->customer;
   $people = $resObj->people;
   $beds = $resObj->beds;
   $space_id = $resObj->space_id;
   $res_id = $resObj->res_id;
+  $is_assigned = $resObj->is_assigned;
+  $space_type_pref = $resObj->space_type_pref;
 
   $iRes = new Reservation($res_id);
   $response['rid'] = $res_id;
@@ -136,14 +137,16 @@ $f3->route('POST /reservations/update/', function ( $f3 ) {
   $response['success'] = true;
 
   //  go through the params and see if the properties have changed and
-  //  do the updates. we are only handling changes of checkin, checkout, customer, 
-  //  beds, people & space_id with this function
+  //  do the updates. we are only handling changes of checkin, checkout,  
+  //  beds, people, space_id, is_assigned, and space_type_pref with this function
   //  beds
   //  TODO this really should be done as a transaction that can be
   //  unwound if there is an error
 
-  //  we don't need to verify date change IF they are also trying to change space_id . . .
-  if( $checkin != $iRes->get_checkin() && $space_id == $iRes->get_space_id() ) {
+  /**
+   * CHECKIN
+   */
+  if( $checkin != $iRes->get_checkin() ) {
     //  make sure this reservation is available
     $is_available = Reservations::check_conflicts_ignore_res( $checkin, $iRes->get_checkout(), $space_id, $iRes->get_id() );
     $response['ci change available'] = $is_available;
@@ -155,8 +158,10 @@ $f3->route('POST /reservations/update/', function ( $f3 ) {
     }
   }
 
-  //  we don't need to verify date change IF they are also trying to change space_id . . .
-  if( $checkout != $iRes->get_checkout() && $space_id == $iRes->get_space_id() ) {
+  /**
+   * CHECKOUT
+   */
+  if( $checkout != $iRes->get_checkout() ) {
     //  make sure this reservation is available
     $is_available = Reservations::check_conflicts_ignore_res( $iRes->get_checkin(), $checkout, $space_id, $iRes->get_id() );
     $response['co change available'] = $is_available;
@@ -167,20 +172,30 @@ $f3->route('POST /reservations/update/', function ( $f3 ) {
       $response['success'] = false;
     }
   }
-  if( $customer_id != $iRes->get_customer() ) {
-    $response['set_customer'] = $iRes->set_customer( $customer_id );
-  }
+
+  /**
+   * BEDS
+   */
   if( $beds != $iRes->get_beds() ){
     $response['set_beds'] = $iRes->set_beds( $beds );
   }
+
+  /**
+   * PEOPLE
+   */
   if( $people != $iRes->get_people() ) {
     $response['set_people'] = $iRes->set_people( $people );
   }
+
+  /**
+   * SPACE_ID
+   */
   if( $space_id != $iRes->get_space_id() ) {
     //  if we change the space_id, we also have to change space_code
     //  BUT the setter handles this 
     // make sure this reservation is available
     $is_available = Reservations::check_conflicts_ignore_res( $checkin, $checkout, $space_id, $iRes->get_id() );
+    //$is_available = true;
     $response['space_id change available'] = $is_available;
     if( $is_available ) {
       $response['set_space_id'] = $iRes->set_space_id( $space_id );
@@ -189,10 +204,26 @@ $f3->route('POST /reservations/update/', function ( $f3 ) {
       $response['success'] = false;
     }
   }
+
+  /**
+   * IS_ASSIGNED
+   */
+  if( $is_assigned != $iRes->get_is_assigned() ) {
+    $response['set_is_assigned'] = $iRes->set_is_assigned( $is_assigned );
+  }
+
+  /**
+   * SPACE_TYPE_PREF
+   */
+  if( $space_type_pref != $iRes->get_space_type_pref() ) {
+    $response['set_space_type_pref'] = $iRes->set_space_type_pref( $space_type_pref );
+  }
+
   // no matter what happened, return the res as it is now
   $jRes = new Reservation($res_id);
   $response['current_res'] = $jRes->to_array();
   print json_encode($response);
+
 });
 
 

@@ -15,6 +15,7 @@ Class RootSpace {
   private $beds;
   private $display_order;
   private $is_active;
+  private $is_unassinged;
 
   public function __construct($root_space_id){
     $pdo = DataConnector::get_connection();
@@ -31,6 +32,7 @@ Class RootSpace {
       $this->beds = $obj->beds;
       $this->display_order = $obj->display_order;
       $this->is_active = $obj->is_active;
+      $this->is_unassinged = $obj->is_unassigned;
     }
     $pdo = null;
   }
@@ -52,6 +54,7 @@ Class RootSpace {
     $arr['beds'] = $this->beds;
     $arr['display_order'] = $this->display_order;
     $arr['is_active'] = $this->is_active;
+    $arr['is_unassinged'] = $this->is_unassinged;
     return $arr;
   }
 

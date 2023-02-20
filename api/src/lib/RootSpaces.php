@@ -22,6 +22,7 @@ Class RootSpaces {
     $stmt->bindParam(":st", $spaceType);
     $stmt->bindParam(":p", $people);
     $stmt->bindParam(":b", $beds);
+
     $stmt->bindParam(":ia", $isActive);
     try{
       $execute = $stmt->execute();
@@ -70,6 +71,7 @@ Class RootSpaces {
       $iArr['people'] = $iObj->people;
       $iArr['beds'] = $iObj->beds;
       $iArr['isActive'] = $iObj->is_active;
+      $iArr['isUnassigned'] = $iObj->is_unassigned;
       array_push($returnArr, $iArr);
     }
     $pdo = null;
