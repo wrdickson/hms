@@ -14,7 +14,7 @@ Class RootSpaces {
 
   public static function create_root_space ( $beds, $childOf, $displayOrder, $people, $showChildren, $spaceType, $title, $isActive ) {
     $pdo = DataConnector::get_connection();
-    $stmt = $pdo->prepare("INSERT INTO root_spaces (title, child_of, display_order, show_children, space_type, people, beds, is_active) VALUES (:t, :co, :do, :sc, :st, :p, :b, :ia)");
+    $stmt = $pdo->prepare("INSERT INTO root_spaces (title, child_of, display_order, show_children, space_type, people, beds, is_active, is_unassigned) VALUES (:t, :co, :do, :sc, :st, :p, :b, :ia, 0)");
     $stmt->bindParam(":t", $title);
     $stmt->bindParam(":co", $childOf);
     $stmt->bindParam(":do", $displayOrder);
