@@ -66,6 +66,7 @@ $f3->route('POST /tax-types-delete/', function ( $f3 ) {
     'id' => $params->id
   );
   $v = new Validate($test_values, $options);
+  
   $response['validate'] = $v->validate();
   if( $response['validate']['valid'] == true ) {
     $response['delete'] = TaxTypes::delete_tax_type( $params->id );
