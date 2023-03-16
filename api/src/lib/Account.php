@@ -34,11 +34,10 @@ class Account {
         }
     }
 
-    public static function create_account( $username, $password, $permission, $email ){
+    public static function create_account( $username, $password, $permission, $email, $is_active ){
       $password_hash = password_hash($password, PASSWORD_DEFAULT);
       //  initially, we won't set this
       $roles = '[]';
-      $is_active = 1;
       $pdo = DataConnector::get_connection();
       $stmt = $pdo->prepare('INSERT INTO accounts (username, email, permission, roles, registered, last_activity, last_login, is_active, password) VALUES (:u, :e, :p, :ro, NOW(), NOW(), NOW(),:ia, :pwd)');
       $stmt->bindParam(':u', $username);
@@ -54,7 +53,7 @@ class Account {
       $response = array();
       $pdo = DataConnector::get_connection();
       $accountsArr = array();
-      $stmt = $pdo->prepare('SELECT * FROM accounts');
+      $stmt = $pdo->prepare('SELECT * FROM accounts ORDER BY username ASC');
       $stmt->execute();
       while($obj = $stmt->fetch(PDO::FETCH_OBJ)){
         $iArr = array();
@@ -169,6 +168,31 @@ class Account {
       $stmt->bindParam(":i", $this->id,PDO::PARAM_STR);
       $result = $stmt->execute();
       return $result;
+    }
+
+    public function update_basic( $username, $email, $permission, $is_active ) {
+      $success = true;
+      if( $this->username != $username)  {
+        if(!$this->set_username($username)){
+          $success = false;
+        }
+      }
+      if( $this->email != $email)  {
+        if(!$this->set_email($email)){
+          $success = false;
+        }
+      }
+      if( $this->permission != $permission)  {
+        if(!$this->set_permission($permission)){
+          $success = false;
+        }
+      }
+      if( $this->is_active != $is_active)  {
+        if(!$this->set_is_active($is_active)){
+          $success = false;
+        }
+      }
+      return $success;
     }
 
     public function update_login() {

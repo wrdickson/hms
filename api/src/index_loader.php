@@ -42,3 +42,4 @@ require 'route_fragments/customers.php';
 require 'route_fragments/folios.php';
 require 'route_fragments/payments.php';
 require 'route_fragments/space_types.php';
+require 'route_fragments/accounts.php';

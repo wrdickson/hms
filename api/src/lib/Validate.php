@@ -223,6 +223,19 @@ Class Validate {
     }
   }
 
+  private function is_email( $input, $args_array ) {
+    if (filter_var($input, FILTER_VALIDATE_EMAIL)) {
+      return array(
+        'test' => true
+      );
+    } else {
+      return array(
+        'test' => false,
+        'error' => 'is not email'
+      );
+    }
+  }
+
   private function is_float ( $input, $args_array ) {
     $pattern ="/^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$/";
     if( preg_match( $pattern, $input )  ) {
