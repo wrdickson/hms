@@ -24,4 +24,32 @@ Class SaleTypes {
     return $sale_types;
   }
 
+  public static function create_sale_type (  $title, $tax_types, $sale_type_group, $is_fixed_price, $fixed_price, $is_actve, $display_order) {
+    $pdo = DataConnector::get_connection();
+    $stmt = $pdo->prepare("INSERT INTO sale_types (title, tax_types, sale_type_group, is_fixed_price, fixed_price, is_active, display_order) VALUES ( :t, :tt, :stg, :ifp, :fp, :ia, :do )");
+    $stmt->bindParam(':t', $title);
+    $stmt->bindParam(':tt', json_encode($tax_types));
+    $stmt->bindParam(':stg', $sale_type_group);
+    $stmt->bindParam(':ifp', $is_fixed_price);
+    $stmt->bindParam(':fp', $fixed_price);
+    $stmt->bindParam(':ia', $is_actve);
+    $stmt->bindParam(':do', $display_order);
+    return $stmt->execute();
+  }
+
+
+  public static function update_sale_type ( $id, $title, $tax_types, $sale_type_group, $is_fixed_price, $fixed_price, $is_actve, $display_order) {
+    $pdo = DataConnector::get_connection();
+    $stmt = $pdo->prepare("UPDATE sale_types SET title = :t, tax_types = :tt, sale_type_group = :stg, is_fixed_price = :ifp, fixed_price = :fp, is_active = :ia, display_order = :do WHERE id = :id ");
+    $stmt->bindParam(':t', $title);
+    $stmt->bindParam(':tt', json_encode($tax_types));
+    $stmt->bindParam(':stg', $sale_type_group);
+    $stmt->bindParam(':ifp', $is_fixed_price);
+    $stmt->bindParam(':fp', $fixed_price);
+    $stmt->bindParam(':ia', $is_actve);
+    $stmt->bindParam(':do', $display_order);
+    $stmt->bindParam(':id', $id); 
+    return $stmt->execute();
+  }
+
 }
