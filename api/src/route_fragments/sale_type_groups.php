@@ -45,6 +45,7 @@ $f3->route('POST /sale-type-group-create', function ( $f3 ) {
 
   if ( $validate_result['valid'] == true ) {
     $response['create'] = SaleTypeGroups::create_sale_type_group( $params->title, $params->is_active, $params->display_order);
+    $response['all_sale_type_groups'] = SaleTypeGroups::get_all_sale_type_groups();
   };
 
 
