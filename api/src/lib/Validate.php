@@ -68,7 +68,7 @@ Class Validate {
       }
       //  iterate through the options array and run the tests
       foreach( $option as $rule_raw ) {
-        //  explode the cdv string into functin and params
+        //  explode the cdv string into function and params
         $iArr = explode(',', $rule_raw );
         $rule = '';
         $args_arr = array();

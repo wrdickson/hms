@@ -96,14 +96,22 @@ Class Reservation{
     //  when we set space id, we also have to generate and set
     //  a new space_code
     //  generate the space code
-    $childrenArr = RootSpaces::get_root_space_children( $space_id );
-    if( count( $childrenArr ) > 0 ) {
-      array_push($childrenArr, $space_id);
-      $this->space_code = $childrenArr;
+
+    //  handle unassigned, ie $space_id == 0
+    if( $space_id == 0 ) {
+      //  empty array
+      $this->space_id = 0;
+      $this->space_code = array();
     } else {
-      $this->space_code = array( $space_id );
+      $childrenArr = RootSpaces::get_root_space_children( $space_id );
+      if( count( $childrenArr ) > 0 ) {
+        array_push($childrenArr, $space_id);
+        $this->space_code = $childrenArr;
+      } else {
+        $this->space_code = array( $space_id );
+      }
+      $this->space_id = $space_id;
     }
-    $this->space_id = $space_id;
     return $this->update_to_db();
   }
   public function set_checkin ( $checkin ) {

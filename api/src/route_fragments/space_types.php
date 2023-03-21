@@ -92,6 +92,7 @@ $f3->route('POST /space-type-update', function ( $f3 ) {
 
 
   if ( $validate_result['valid'] == true ) {
+    
     $response['update'] = SpaceTypes::update_space_type($params->id, $params->title, $params->display_order, $params->is_active);
     $response['all_space_types'] = SpaceTypes::get_space_types();
   };

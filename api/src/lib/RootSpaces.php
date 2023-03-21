@@ -13,6 +13,17 @@ use \Exception;
 Class RootSpaces {
 
   public static function create_root_space ( $beds, $childOf, $displayOrder, $people, $showChildren, $spaceType, $title, $isActive ) {
+
+    /* 
+    *  what we need to do:
+    *  load up the all spaces array
+    *  modify the space in question with the new data
+    *  run getChildren() on everything ie recalculate space_code on every effected reservation
+    *  if it works:
+    *    save everything off
+    *  if it doesnt:
+    *    return an error
+    */
     $pdo = DataConnector::get_connection();
     $stmt = $pdo->prepare("INSERT INTO root_spaces (title, child_of, display_order, show_children, space_type, people, beds, is_active, is_unassigned) VALUES (:t, :co, :do, :sc, :st, :p, :b, :ia, 0)");
     $stmt->bindParam(":t", $title);
@@ -31,16 +42,77 @@ Class RootSpaces {
       return $ex;
     }
     $pdo = null;
+
+    //  TODO make this part of the return, huh?
+    //  TODO this is rough and uses processing power and sucks
+    //  FIX IT!
+    Reservations::update_space_codes();
+
     return $id;
   }
 
   public static function delete_root_space ( $root_space_id ) {
+    $reesponse = array();
+    /* 
+    *  what we need to do:  AS A TRANSACTION, please
+    *  1. unassign all reservations with this space_code
+    *  2. recalculate space codes on ALL reservations
+    *  3. actually delete the space
+    */
     $pdo = DataConnector::get_connection();
+
+    // 1
+    //  first, get the unassigned root space id
+    $stmt = $pdo->prepare("SELECT id FROM root_spaces WHERE is_unassigned = 1");
+    $response['execute get unassigned rs'] = $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $unassigned_space_id = $result['id'];
+    $response['$unassigned_space_id'] = $unassigned_space_id;
+
+    //  second, iterate through all reservatons that have this as space_code
+    //  and bump to unassigned after getting space_type_pref
+
+    //  get array of all root spaces
+    $root_spaces_arr = RootSpaces::get_root_spaces();
+    $response['$root_spaces_arr'] = $root_spaces_arr;
+
+    $stmt = $pdo->prepare("SELECT * FROM reservations WHERE space_id = :si");
+    $stmt->bindParam(':si', $root_space_id);
+    $stmt->execute();
+    $effected_res_arr = array();
+    while( $result = $stmt->fetch(PDO::FETCH_ASSOC) ) {
+      $res = array();
+      $res['id'] = $result['id'];
+      $res['space_id'] = $result['space_id'];
+      array_push($effected_res_arr, $res);
+    };
+    $response['$effected_res_arr'] = $effected_res_arr;
+
+
+    //  iterate through effected reservations and reassign
+    foreach($effected_res_arr as $effected_res){
+      foreach($root_spaces_arr as $root_space){
+        if($root_space['id'] == $effected_res['space_id']){
+          $iRes = new Reservation($effected_res['id']);
+          $iRes->set_is_assigned(0);
+          $iRes->set_space_id(0);
+          $iRes->set_space_type_pref($root_space['spaceType']);
+        }
+      }
+    }
+
     $stmt = $pdo->prepare("DELETE FROM root_spaces WHERE id = :rsi");
     $stmt->bindParam(":rsi", $root_space_id);
-    $execute = $stmt->execute();
+    $execute_delete = $stmt->execute();
+    $response['execute_delete'] = $execute_delete;
+
+    //  TODO make this part of the return, huh?
+    //  TODO this is rough and uses processing power and sucks
+    //  FIX IT!
+    Reservations::update_space_codes();
     $pdo = null;
-    return $execute;
+    return $response;
   }
 
   public static function get_all_space_ids(){
@@ -79,6 +151,7 @@ Class RootSpaces {
   }
 
   public static function get_root_space_children( $rootSpaceId ){
+
     //  recursive get_children()
     if( !function_exists('wrdickson\hms\get_children') ){
       function get_children($spaceId, $rootSpaces) {
@@ -129,13 +202,14 @@ Class RootSpaces {
     *  what we need to do:
     *  load up the all spaces array
     *  modify the space in question with the new data
-    *  run getChildren() on everything
+    *  run getChildren() on everything ie recalculate space_code on every effected reservation
     *  if it works:
     *    save everything off
     *  if it doesnt:
     *    return an error
     */
 
+    //  instead, we just hammer the update through . . . 
     $pdo = DataConnector::get_connection();
     $stmt = $pdo->prepare("UPDATE root_spaces SET title = :t, display_order = :d, child_of = :c, show_children = :s, space_type = :st, people= :p, beds = :b, is_active = :ia WHERE id = :i");
     $stmt->bindParam(":i", $id);
@@ -148,11 +222,18 @@ Class RootSpaces {
     $stmt->bindParam(":b", $beds);
     $stmt->bindParam(":ia", $isActive);
     $execute = $stmt->execute();
+
+    //  TODO make this part of the return, huh?
+    //  TODO this is rough and uses processing power and sucks
+    //  FIX IT!
+    Reservations::update_space_codes();
+
+    //  simulate HUGE processing from above stmt
+    sleep(5);
+
     return $execute;
   }
 
-  public function generateSpaceCodes () {
 
-  }
 
 }

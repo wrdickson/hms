@@ -15,6 +15,7 @@ $f3->route('POST /payments/quick-folio-sale', function ( $f3 ) {
   $response['params'] = $params;
 
   //  get useful variables
+
   $customer = $params['resCustomer'];
   $payment_type = $params['paymentType'];
   $res_folio = $params['resFolio'];
@@ -29,6 +30,8 @@ $f3->route('POST /payments/quick-folio-sale', function ( $f3 ) {
 
 
   //  this validation should be much more robust,
+  //  in fact, the server should be calculating a lot of this
+  //  and ensuring that the digits match what the front end has offered\
   //  but this should toss horribly malformed requests
   $options = array(
     'paymentType' => array (

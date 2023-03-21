@@ -13,7 +13,7 @@ $f3->route('POST /payment-types/get-active', function ( $f3 ) {
  */
 $f3->route('POST /payment-types/get-all', function ( $f3 ) {
   $response['all_payment_types'] = PaymentTypes::get_all_payment_types();
-  $response['hello'] = 'hello';
+  $response['active_payment_types'] = PaymentTypes::get_active_payment_types();
   print json_encode($response);
 });
 

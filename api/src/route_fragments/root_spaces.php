@@ -39,9 +39,10 @@ $f3->route('POST /root-spaces-delete', function( $f3 ) {
   $response['account'] = $account;
   $response['params'] = $params;
 
-  $response['execute'] = RootSpaces::delete_root_space($params->root_space_id);
+  $response['delete'] = RootSpaces::delete_root_space($params->root_space_id);
 
   $root_spaces_pre_children = RootSpaces::get_root_spaces();
+  $response['root_spaces_pre_children'] = $root_spaces_pre_children;
   $root_spaces_children_parents = array();
   foreach( $root_spaces_pre_children as $rspc ) {
     $rspc['children'] = RootSpaces::get_root_space_children($rspc['id']);
@@ -49,6 +50,10 @@ $f3->route('POST /root-spaces-delete', function( $f3 ) {
     array_push($root_spaces_children_parents, $rspc);
   }
   $response['root_spaces_children_parents'] = $root_spaces_children_parents;
+  //  2. bump all reservations with this space_code to unassigned
+  //      make sure to fix is_assigned and space_type_pref, too
+
+  //  1. recalculate all space_codes on reservations
 
   print json_encode( $response );
 });

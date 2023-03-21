@@ -294,7 +294,7 @@ public static function check_conflicts( $start, $end, $space_id ) {
     $stmt->bindParam(':start', $start_date);
     $stmt->bindParam(':end', $end_date);
     $stmt->execute();
-    $arr= array();
+    $arr = array();
     while($obj = $stmt->fetch(PDO::FETCH_OBJ)){
         $iArr = array();
         $iArr['id'] = $obj->id;
@@ -316,6 +316,24 @@ public static function check_conflicts( $start, $end, $space_id ) {
         array_push($arr, $iArr);
     };
     return $arr;
+  }
+
+  public static function update_space_codes () {
+    //  get all reservations (except unassigned)
+    $pdo = DataConnector::get_connection();
+    $stmt=$pdo->prepare("SELECT id, space_id FROM reservations WHERE is_assigned = 1");
+    $stmt->execute();
+    while( $arr = $stmt->fetch(PDO::FETCH_ASSOC)) {
+      $res_id = $arr['id'];
+      $space_id= $arr['space_id'];
+      //  generate space code
+      $iRes = new Reservation( $res_id );
+      //  Reservation->set_space_id() generates new space_code and updates to db
+      //  even of it remains the same
+      $iRes->set_space_id($space_id);
+    };
+    //  simulate a HUGE process 
+    sleep(5);
   }
 
 }
