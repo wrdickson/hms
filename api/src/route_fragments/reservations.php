@@ -15,7 +15,11 @@ $f3->route('POST /reservations/', function ( $f3 ) {
   $params = json_decode($f3->get('BODY'), true);
 
   $response['create'] = Reservations::create_reservation($account->id, $params['customer']['id'], $params['checkin'], $params['checkout'], $params['space_id'], $params['beds'], $params['people'], $params['is_assigned'], $params['space_type_pref'] );
-
+  $response['nri'] = $response['create']['new_res_id'];
+  if( $response['create']['new_res_id'] ) {
+    $iRes = new Reservation($response['create']['new_res_id']);
+    $response['history_added'] = $iRes->add_history("Created", $account->id, $account->username);
+  }
   $response['cid'] = $params['customer']['id'];
   $response['account'] = $account;
   $response['params'] = $params;
@@ -218,6 +222,9 @@ $f3->route('POST /reservations/update1/', function ( $f3 ) {
   if( $space_type_pref != $iRes->get_space_type_pref() ) {
     $response['set_space_type_pref'] = $iRes->set_space_type_pref( $space_type_pref );
   }
+
+  // add history
+  $response['add_history'] = $iRes->add_history("Modified", $account->id,  $account->username);
 
   // no matter what happened, return the res as it is now
   $jRes = new Reservation($res_id);

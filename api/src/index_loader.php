@@ -28,6 +28,7 @@ require 'lib/Reservation.php';
 require 'lib/Reservations.php';
 require 'lib/SaleTypeGroups.php';
 require 'lib/Options.php';
+require 'lib/Reports.php';
 
 //  2. require route fragments
 require 'route_fragments/auth.php';
@@ -45,3 +46,4 @@ require 'route_fragments/payments.php';
 require 'route_fragments/space_types.php';
 require 'route_fragments/accounts.php';
 require 'route_fragments/options.php';
+require 'route_fragments/reports.php';

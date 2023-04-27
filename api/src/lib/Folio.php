@@ -11,6 +11,7 @@ Class Folio{
   private $customer;
   private $payments;
   private $sale_items;
+  private $sale_detail;
 
   public function __construct( $id ) {
 
@@ -42,7 +43,7 @@ Class Folio{
       $arr['sale_quantity'] = $obj->sale_quantity;
       $arr['sale_price'] = $obj->sale_price;
       $arr['sale_subtotal'] = $obj->sale_subtotal;
-      $arr['sale_tax'] = $obj->sale_total;
+      $arr['sale_tax'] = $obj->sale_tax;
       
       $arr['sale_total'] = $obj->sale_total;
       $arr['tax_spread'] = json_decode( $obj->tax_spread, true );
@@ -66,6 +67,31 @@ Class Folio{
       array_push($payments_arr, $arr);
     }
     $this->payments = $payments_arr;
+
+    // 3. sale_detail
+    $stmt = $pdo->prepare("SELECT payments.id AS payment_id, payments.total AS payment_total, payments.datetime_posted AS posted_date, accounts.username as posted_by, sale_types.title, sale_items.description, sale_items.sale_quantity, sale_items.sale_price, sale_items.sale_subtotal, sale_items.sale_tax, sale_items.sale_total, payment_types.payment_title AS payment_type FROM payments LEFT JOIN sale_items ON payments.id = sale_items.payment_id INNER JOIN sale_types ON sale_items.sale_type = sale_types.id INNER JOIN accounts on payments.posted_by = accounts.id INNER JOIN payment_types on payments.payment_type = payment_types.id WHERE payments.folio = :i ORDER BY payments.id ASC");
+
+    $stmt->bindParam(":i", $id);
+    $i = $stmt->execute();
+    $payment_details_arr = array();
+    while($obj = $stmt->fetch(PDO::FETCH_OBJ)) {
+      $arr = array();
+      $arr['id'] = $obj->payment_id;
+      $arr['payment_total'] = $obj->payment_total;
+      $arr['posted_date'] = $obj->posted_date;
+      $arr['posted_by'] = $obj->posted_by;
+      $arr['title'] = $obj->title;
+      $arr['description'] = $obj->description;
+      $arr['sale_quantity'] = $obj->sale_quantity;
+      $arr['sale_price'] = $obj->sale_price;
+      $arr['sale_subtotal'] = $obj->sale_subtotal;
+      $arr['sale_tax'] = $obj->sale_tax;
+      $arr['sale_total'] = $obj->sale_total;
+      $arr['payment_type'] = $obj->payment_type;
+      array_push($payment_details_arr, $arr);
+    }
+    $this->sale_detail = $payment_details_arr;
+    //$this->sale_detail = $this->id;
   }
 
   public function get_id(){
@@ -78,6 +104,7 @@ Class Folio{
     $arr['customer'] = $this->customer;
     $arr['payments'] = $this->payments;
     $arr['sale_items'] = $this->sale_items;
+    $arr['sale_detail'] = $this->sale_detail;
     return $arr;
   }
 }

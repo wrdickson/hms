@@ -133,24 +133,26 @@ Class Reservation{
   }
 
   // note is a assoc array 
-   public function add_note( $note_text, $user_id, $user_name ){
+   public function add_note( $note_text, $account_id, $account_name ){
     $noteArr = array();
-    $noteArr['date'] = date('Y-m-j H:i:s');
-    $noteArr['account_id'] = $user_id;
-    $noteArr['account_name'] = $user_name;
-    $noteArr['text'] = $note_text;
+    $noteArr['d'] = date('Y-m-j H:i:s');
+    $noteArr['a'] = $account_id;
+    $noteArr['n'] = $account_name;
+    $noteArr['t'] = $note_text;
     array_push($this->notes, $noteArr);
     $updateSuccess = $this->update_to_db();
     return $updateSuccess;
   }
 
-  public function add_history( $history_text, $user_id, $user_name ){
+  public function add_history( $history_text, $account_id, $account_name ){
     $historyArr = array();
-    $historyArr['date'] = date('Y-m-j H:i:s');
-    $historyArr['account_id'] = $user_id;
-    $historyArr['account_name'] = $user_name;
-    $historyArr['text'] = $history_text;
-    array_push($this->get_history(), $historyArr);
+    $historyArr['d'] = date('Y-m-j H:i:s');
+    $historyArr['a'] = $account_id;
+    $historyArr['n'] = $account_name;
+    $historyArr['t'] = $history_text;
+    $arr = $this->get_history();
+    array_push($arr, $historyArr);
+    $this->history = $arr;
     $updateSuccess = $this->update_to_db();
     return $updateSuccess;
   }
@@ -269,7 +271,6 @@ Class Reservation{
   public function get_history () {
     return $this->history;
   }
-
   public function get_status () {
     return $this->status;
   }
