@@ -3,6 +3,7 @@
 namespace wrdickson\hms;
 use \PDO;
 use \DATETIME;
+use Brick\Money\Money;
 
 Class Reports {
 
@@ -56,7 +57,7 @@ Class Reports {
       foreach($all_period_sales as $sale){
         foreach($sale['tax_spread'] as $spread_obj){
           if($spread_obj->i == $tax_type)
-            $tax_totals_by_tax_type[$tax_type] = (intval($tax_totals_by_tax_type[$tax_type] * 100) + intval($spread_obj->t * 100))/100;
+            $tax_totals_by_tax_type[$tax_type] = (strval($tax_totals_by_tax_type[$tax_type] * 100) + strval($spread_obj->t * 100))/100;
         }
       }
     }
@@ -75,9 +76,9 @@ Class Reports {
     foreach($all_period_sales as $sale){
       foreach($all_included_sale_types as $sale_type){
         if($sale['sale_type'] == $sale_type){
-          $sale_subtotal_by_sale_type[$sale_type] = (intval($sale_subtotal_by_sale_type[$sale_type] * 100) + intval($sale['sale_subtotal'] * 100))/100;
-          $sale_tax_total_by_sale_type[$sale_type] = (intval($sale_tax_total_by_sale_type[$sale_type] * 100) + intval($sale['sale_tax'] * 100))/100;
-          $sale_total_by_sale_type[$sale_type] = (intval($sale_total_by_sale_type[$sale_type] * 100) + intval($sale['sale_total'] * 100))/100;
+          $sale_subtotal_by_sale_type[$sale_type] = (strval($sale_subtotal_by_sale_type[$sale_type] * 100) + strval($sale['sale_subtotal'] * 100))/100;
+          $sale_tax_total_by_sale_type[$sale_type] = (strval($sale_tax_total_by_sale_type[$sale_type] * 100) + strval($sale['sale_tax'] * 100))/100;
+          $sale_total_by_sale_type[$sale_type] = (strval($sale_total_by_sale_type[$sale_type] * 100) + strval($sale['sale_total'] * 100))/100;
         }
       }
     }
@@ -93,6 +94,8 @@ Class Reports {
     $response['tax_totals_by_tax_type'] = $tax_totals_by_tax_type;
     $response['all_included_tax_types'] = $all_included_tax_types;
     $response['all_period_sales'] = $all_period_sales;
+    $response['all_tax_types'] = TaxTypes::get_all_tax_types();
+    $response['all_sale_types'] = SaleTypes::get_all_sale_types();
     $response['report_start'] = $start;
     $response['report_end'] = $end;
     return $response;
@@ -148,7 +151,8 @@ Class Reports {
           $payment_type_arr['payment_type'] = $included_payment_type;
           $payment_type_arr['payment_type_title'] = $payment['payment_title'];
           //  don't do floating point math!!!!!
-          $payment_type_arr['total'] = ($payment_type_arr['total'] * 100 ) + ($payment['total'] * 100)/100;
+          $payment_type_arr['total'] += intval($payment['total'] * 100)/100;
+          $payment_type_arr['total'] = round($payment_type_arr['total'],2);
           array_push($payment_type_arr['payments'], $payment);
         }
       }

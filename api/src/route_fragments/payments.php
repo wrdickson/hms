@@ -25,8 +25,7 @@ $f3->route('POST /payments/quick-folio-sale', function ( $f3 ) {
   $sale_tax = $params['saleTax'];
   $sale_total = $params['saleTotal'];
   $sold_by = $params['soldBy'];
-
-  $sale_datetime = date("Y-m-d H:m:s");
+  $sale_datetime = date('Y-m-d H:i:s');
 
 
   //  this validation should be much more robust,
