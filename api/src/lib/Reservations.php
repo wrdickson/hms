@@ -183,7 +183,7 @@ public static function check_conflicts( $start, $end, $space_id ) {
     $pdo = DataConnector::get_connection();
     $pdo->beginTransaction();
 
-    //  $space_id is null for unassigned reservation
+    //  $space_id is 0 for unassigned reservation
     if( !$space_id ) {
       $space_id = 0;
     }
@@ -194,7 +194,6 @@ public static function check_conflicts( $start, $end, $space_id ) {
       $account_username = $i_account->get_username();
     } catch ( Exception $e ) {
       $pdo->rollBack();
-      print('error getting account');
     }
     //  generate the space code
     try {
@@ -223,7 +222,7 @@ public static function check_conflicts( $start, $end, $space_id ) {
       $response['new_folio_id'] = $new_folio_id;
       //  returns the id of the new folio, which is all we need
       $i_folio = new Folio($new_folio_id);
-      $response['new_folio_id'] = $i_folio;
+      $response['new_folio_id'] = $i_folio->get_id();
     } catch (Exception $e ) {
       $response['add_folio_error'] = $e;
       $response['folio_cust_id'] = $customer;
@@ -232,7 +231,6 @@ public static function check_conflicts( $start, $end, $space_id ) {
 
     //  get space type pref
     try {
-
       $response['space_type_pref'] = $space_type_pref;
     } catch ( Exception $e ) {
       $pdo->rollBack();

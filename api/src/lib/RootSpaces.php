@@ -227,10 +227,6 @@ Class RootSpaces {
     //  TODO this is rough and uses processing power and sucks
     //  FIX IT!
     Reservations::update_space_codes();
-
-    //  simulate HUGE processing from above stmt
-    sleep(5);
-
     return $execute;
   }
 

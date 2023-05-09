@@ -80,6 +80,10 @@ $f3->route('POST /reservations/range', function( $f3 ) {
   $response['account'] = $account;
   $response['params'] = $params;
   $response['reservations'] = Reservations::get_reservations_date_range($params->startDate, $params->endDate);
+
+  //  simulate HUGE processing from above stmt
+  sleep(1);
+
   print json_encode($response);
 });
 

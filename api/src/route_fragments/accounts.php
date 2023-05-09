@@ -2,6 +2,8 @@
 
 namespace wrdickson\hms;
 
+use \PDO;
+
 /**
  * GET ALL
  */
@@ -68,6 +70,45 @@ $f3->route('POST /accounts/create', function ( $f3 ) {
     $response['all_accounts'] = Account::get_all_accounts();
   };
 
+  print json_encode($response);
+});
+
+/**
+ * REQUEST UPDATE LINK
+ */
+$f3->route('POST /accounts/reset-link-request', function ( $f3 ) {
+  $params = json_decode($f3->get('BODY'), true);
+  $response['params'] = $params;
+  $test_username = $params['username'];
+  $response = array();
+
+  if($params['username']) {
+
+    $pdo = DataConnector::get_connection();
+    $stmt = $pdo->prepare("SELECT * FROM accounts WHERE username = :username");
+    $stmt->bindParam( ":username", $test_username );
+    $stmt->execute();
+    $account_email = null;
+    $is_active = false;
+    $id = null;
+
+    while($obj = $stmt->fetch(PDO::FETCH_OBJ)){
+      $account_email = $obj->email;
+      $is_active = $obj->is_active;
+      $id = $obj->id;
+    }
+    if( $id && $is_active ) {
+      $account = new Account($id);
+      $response['account'] = $account->to_array();
+      $response['email_sent'] = $account->send_reset_link();
+      $response['message'] = 'account found';
+    } elseif ( $id ){
+      $response['message'] = 'Inactive account';
+    } else {
+      $response['message'] = 'Account not found';
+    }
+    
+  } 
   print json_encode($response);
 });
 

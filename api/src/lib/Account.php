@@ -3,6 +3,9 @@
 namespace wrdickson\hms;
 
 use \PDO;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
 class Account {
 
@@ -71,6 +74,31 @@ class Account {
       return $accountsArr;
     }
 
+    public function send_reset_link () {
+      $mail = new PHPMailer(true);
+      try {
+        //  Server settings
+        $mail->SMTPDebug = SMTP::DEBUG_SERVER;          // Enable verbose debug output
+        $mail->SMTPAuth   = false;                      // Enable SMTP authentication
+        //Recipients
+        $mail->setFrom('cahunis@trekbill.com', 'Mailer');
+        $mail->addAddress( $this->email );       // Name is optional
+        $mail->addReplyTo('webmaster@trekbill.com');
+        
+        // Content
+        $mail->isHTML(true);                           // Set email format to HTML
+        $mail->Subject = 'Password reset request';
+        $mail->Body    = '<p>no link yet,/p>';
+        //  $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+    
+        $mail->send();
+        return true;
+      } catch (Exception $e) {
+          return "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+          //echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+      }
+    }
+
     public function to_array(){
         $arr = array();
         $arr['id'] = $this->id;
@@ -94,7 +122,7 @@ class Account {
       $arr['roles'] = $this->roles;
       $arr['is_active'] = $this->is_active;
       return $arr;
-  }
+    }
 
     public function set_email( $email ) {
       $xid = $this->get_id();
