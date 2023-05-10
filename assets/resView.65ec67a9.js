@@ -1,1 +1,0 @@
-import{x as o,y as e}from"./index.33301253.js";const a=o({id:"resViewStore",state:()=>({startDate:e().subtract(1,"days").format("YYYY-MM-DD"),showHideRootSpaceCopy:null,scrollLeft:0,scrollTop:0}),actions:{setShowHideRootSpaceCopy(t){console.log("storing rscopy"),this.showHideRootSpaceCopy=t},setStartDate(t){this.startDate=t}}});export{a as r};
