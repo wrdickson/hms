@@ -6,6 +6,13 @@ use \PDO;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
+use \PDOException;
+use \DateTimeImmutable;
+use \Firebase\JWT\JWT;
+use \Firebase\JWT\Key;
+use \Firebase\JWT\SignatureInvalidException;
+use \Firebase\JWT\BeforeValidException;
+use \Firebase\JWT\ExpiredException;
 
 class Account {
 
@@ -52,6 +59,25 @@ class Account {
       return $stmt->execute();
     }
 
+
+    public function generate_pwd_reset_token( ) {
+      $issuedAt = date_create();
+      $expireAt = date_create();
+      date_add( $expireAt, date_interval_create_from_date_string("15 minutes") );
+      $payload = [
+        'iat' => $issuedAt->getTimestamp(),  // Issued at: time when the token was generated,
+        //  SERVER_NAME is a constant set in config.php
+        'iss' => SERVER_NAME,
+        'exp' => $expireAt->getTimeStamp(),
+        'exp_f' => date_format($expireAt, 'Y-m-d H:i:s'),  // Formatted expire
+        'nbf'  => $issuedAt->getTimestamp(),  // Not before
+        'nbf_f' => date_format($issuedAt, 'Y-m-d H:i:s'),  // Formatted expire
+        'account' => $this->to_array_secure()
+      ];
+      $token = JWT::encode($payload, JWT_KEY, 'HS256');
+      return $token;
+    }
+
     public static function get_all_accounts () {
       $response = array();
       $pdo = DataConnector::get_connection();
@@ -74,7 +100,11 @@ class Account {
       return $accountsArr;
     }
 
-    public function send_reset_link () {
+    public function send_reset_link ( $site_name ) {
+      $uri_base = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
+      $response['uri_base'] = $uri_base;
+      $token = $this->generate_pwd_reset_token();
+      $link_uri = $uri_base . $token;
       $mail = new PHPMailer(true);
       try {
         //  Server settings
@@ -87,15 +117,22 @@ class Account {
         
         // Content
         $mail->isHTML(true);                           // Set email format to HTML
-        $mail->Subject = 'Password reset request';
-        $mail->Body    = '<p>no link yet,/p>';
+        $mail->Subject = 'Password reset from ' . $site_name;
+        $mail->Body = '<h2>A request has been sent from ' . $site_name . ' to reset your password.</h2>';
+        $mail->Body .= '<p>Follow the link below to reset your password:</p>';
+        $mail->Body .= '<p>Link expires in 15 minutes.</p>';
+        //$mail->Body.= '<p>' . $uri_base . '</p>';
+        //$mail->Body.= '<p>' . $token . '</p>';
+        //$mail->Body.= '<p>' . $link_uri . '</p>';
+        $mail->Body.= '<a href="' . $link_uri . '">Change password</a>';
+
+
         //  $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
     
         $mail->send();
         return true;
       } catch (Exception $e) {
           return "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-          //echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
       }
     }
 

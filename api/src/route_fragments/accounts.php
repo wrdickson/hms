@@ -3,6 +3,12 @@
 namespace wrdickson\hms;
 
 use \PDO;
+use \Exception;
+use \Firebase\JWT\JWT;
+use \Firebase\JWT\Key;
+use \Firebase\JWT\SignatureInvalidException;
+use \Firebase\JWT\BeforeValidException;
+use \Firebase\JWT\ExpiredException;
 
 /**
  * GET ALL
@@ -74,14 +80,48 @@ $f3->route('POST /accounts/create', function ( $f3 ) {
 });
 
 /**
+ * DISPLAY UPDATE REQUEST FROM LINK
+ */
+$f3->route('GET /accounts/reset-link-request/@token', function ( $f3 ) {
+  try {
+    $token = $f3->get('PARAMS.token');
+    //$site_name = $f3->get('PARAMS.site-name');
+    $uri_base = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
+    $e = explode('/', $uri_base);
+    array_pop($e);
+    array_pop($e);
+    $f = implode('/', $e);
+    $f .= '/reset-password/';
+    //print $f . '<br/>';
+
+    $decoded = JWT::decode( $token, new Key( JWT_KEY, 'HS256') );
+    //print "<PRE>"; 
+    //print_r($decoded);
+    //echo "</PRE>";
+    //echo "<h1>" . $site_name . " password reset:</h1>";
+    echo "<form method='post' action='$f'>";
+    echo "<input type='hidden' id='token' name='token' value=$token />";
+    echo "<label for='pwd1'>Password</label><br/>";
+    echo "<input type='password' id='pwd1' name='pwd1'/><br/>";
+    echo "<label for='pwd2'>Again:</pwd2><br/>";
+    echo "<input type='password' id='pwd2' name='pwd2'/><br/>";
+    echo "<input type='submit' value='Go'>";
+    echo "</form>";
+    
+  } catch (  Exception $e ) {
+    print "There was an error: " . $e->getMessage();
+  }
+});
+
+/**
  * REQUEST UPDATE LINK
  */
 $f3->route('POST /accounts/reset-link-request', function ( $f3 ) {
   $params = json_decode($f3->get('BODY'), true);
   $response['params'] = $params;
   $test_username = $params['username'];
+  $site_name = $params['siteName'];
   $response = array();
-
   if($params['username']) {
 
     $pdo = DataConnector::get_connection();
@@ -100,16 +140,69 @@ $f3->route('POST /accounts/reset-link-request', function ( $f3 ) {
     if( $id && $is_active ) {
       $account = new Account($id);
       $response['account'] = $account->to_array();
-      $response['email_sent'] = $account->send_reset_link();
+      $response['email_sent'] = $account->send_reset_link($site_name);
       $response['message'] = 'account found';
     } elseif ( $id ){
       $response['message'] = 'Inactive account';
     } else {
       $response['message'] = 'Account not found';
     }
-    
   } 
   print json_encode($response);
+});
+
+/**
+ * RESET PASSWORD FROM EMAIL LINK
+ */
+$f3->route('POST /accounts/reset-password/', function ($f3) {
+  $token = $_POST['token'];
+  $pwd1 = $_POST['pwd1'];
+  $pwd2 = $_POST['pwd2'];
+  if( $token && $pwd1 && $pwd2) {
+    if( $pwd1 == $pwd2 ) {
+      // validate 
+      $options = array(
+        'pwd1' => array(
+          'is_alphanum_dash_star_underscore',
+          'is_length, 4, 24'
+        )
+      );
+      $test_values = array(
+        'pwd1' => $pwd1
+      );
+      $v = new Validate($test_values, $options);
+      $validate_result = $v->validate();
+      if( $validate_result['valid'] ) {
+        //  good to go
+        //  authorize token
+        try {
+          $decoded = JWT::decode( $token, new Key( JWT_KEY, 'HS256') );
+          //echo '<PRE>' . print_r($decoded) . '</PRE>';
+          //echo '<hr>' . 'id: ' . $decoded->account->id . '<hr/>';
+          $iAccount = new Account($decoded->account->id);
+          $pwd_set = $iAccount->set_password( $pwd1);
+          if( $pwd_set ) {
+            echo '<h4>Password reset.<h4>';
+            echo '<p>Return to the app and login.</p>';
+          } else {
+            echo 'Error.  Password NOT reset.';
+          }
+        } catch ( Exception $e ){
+          echo $e->getMessage();
+        }
+      } else {
+        //  print the errors
+        foreach ( $validate_result['errors'] as $error ) {
+          echo 'Error: <br/>';
+          echo $error . '<br/>';
+        }
+      }
+    } else {
+      echo "Passwords do not match.";
+    }
+  } else {
+    echo "There was an error.";
+  }
 });
 
 /**

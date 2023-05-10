@@ -173,12 +173,12 @@ Class Auth {
     while($obj = $stmt->fetch(PDO::FETCH_OBJ)){
       $this->id = $obj->id;
       $this->username = $obj->username;
-      $this->email = $obj->email;
+      //$this->email = $obj->email;
       $this->permission = $obj->permission;
       $this->roles = json_decode($obj->roles, true);
-      $this->registered = $obj->registered;
-      $this->last_login = $obj->last_login;
-      $this->last_activity = $obj->last_activity;
+      //$this->registered = $obj->registered;
+      //$this->last_login = $obj->last_login;
+      //$this->last_activity = $obj->last_activity;
       $this->is_active = (int)$obj->is_active;
     }
   }
