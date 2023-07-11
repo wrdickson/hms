@@ -4,7 +4,8 @@ namespace wrdickson\hms;
 
 /** 
  * CREATE CUSTOMER
- * This is hamburger bullshit, we are only creating based on 
+ * This is hamburger bullsh
+ * it, we are only creating based on 
  * firstname ,lastname, phone, and email
  * TODO fix this shit
  */

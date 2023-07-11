@@ -40,8 +40,6 @@ $f3->route('POST /reports/shift-report', function ( $f3 ) {
   //$response['account_id'] = $account_id;
   
   $params = json_decode($f3->get('BODY'), true );
-  //$response['params'] = $params;
-  $params = json_decode( $f3->get('BODY'), true );
   $start = $params['start'];
   $end = $params['end'];
   try {
